@@ -1,0 +1,95 @@
+{% extends "_base.html" %}
+{% load partials %}
+
+{% block main %}
+  <section>
+    <p>
+      This example shows you how you can do partial rendering for htmx requests using <a href="https://github.com/carltongibson/django-template-partials">django-template-partials</a>.
+      The view renders only the content of the table section partial for requests made with htmx, saving time and bandwidth.
+      Paginate through the below list of randomly generated people to see this in action, and study the view and template.
+    </p>
+  </section>
+
+  <article>
+    <section>
+      <form hx-post="{% url 'add-todo-item' %}" hx-target="#table" hx-swap="outerHTML">
+        <input type="text" name="title" placeholder="Next todo item" size="100" required>
+        <button>Add</button>
+      </form>
+    </section>
+    {% partialdef table-section inline %}
+    <section id="table">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Created at</th>
+            <th>Done</th>
+            <th>Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for todo_item in page.object_list %}
+            <tr>
+              <td>{{ todo_item.id }}</td>
+              <td>{{ todo_item.title }}</td>
+              <td>{{ todo_item.created_at }}</td>
+              <td><a hx-put="{% url 'edit-todo-item' todo_item.id %}">✔️</a></td>
+              <td><a hx-delete="{% url 'edit-todo-item' todo_item.id %}">❌</a></td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="4">
+                No todo items on this page.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <nav hx-target=#table hx-swap=outerHTML hx-push-url=true>
+        <ul>
+          {% if page.number != 1 %}
+            <li>
+              <!--
+                For each link we use hx-get to tell htmx to fetch that URL and
+                swap it in. We also repeat the URL in the href attribute so the
+                page works without JavaScript, and to ensure the link is
+                displayed as clickable.
+              -->
+              <a hx-get="?page=1" href="?page=1">
+                &laquo; First
+              </a>
+            </li>
+          {% endif %}
+          {% if page.has_previous %}
+            <li>
+              <a hx-get="?page={{ page.previous_page_number }}" href="?page={{ page.previous_page_number }}">
+                {{ page.previous_page_number }}
+              </a>
+            </li>
+          {% endif %}
+          <li>
+            {{ page.number }}
+          </li>
+          {% if page.has_next %}
+            <li>
+              <a hx-get="?page={{ page.next_page_number }}" href="?page={{ page.next_page_number }}">
+                {{ page.next_page_number }}
+              </a>
+            </li>
+          {% endif %}
+          {% if page.number != page.paginator.num_pages %}
+            <li>
+              <a hx-get="?page={{ page.paginator.num_pages }}" href="?page={{ page.paginator.num_pages }}">
+                &raquo; Last
+              </a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </section>
+    {% endpartialdef %}
+  </article>
+
+{% endblock main %}

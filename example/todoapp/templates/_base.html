@@ -1,0 +1,31 @@
+{% load django_htmx static %}
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>django-htmx example app</title>
+  <link rel="stylesheet" href="{% static 'mvp.css' %}">
+
+  <!-- An example of how we can configure htmx -->
+  <!-- https://htmx.org/docs/#config -->
+  <meta name="htmx-config" content='{"historyCacheSize": 15}'>
+  <script src="{% static 'htmx.js' %}" defer></script>
+  <script src="{% static 'ext/debug.js' %}" defer></script>
+  <script src="{% static 'ext/event-header.js' %}" defer></script>
+</head>
+
+<!--
+  Enable htmx extensions for all requests:
+  * debug: https://github.com/bigskysoftware/htmx-extensions/blob/main/src/debug/README.md
+  * event-header: https://github.com/bigskysoftware/htmx-extensions/blob/main/src/event-header/README.md
+-->
+<body hx-ext="debug, event-header">
+  <main id="main">
+    {% block main %}{% endblock %}
+  </main>
+  {% django_htmx_script %}
+</body>
+
+<script>document.body.addEventListener('htmx:configRequest',(event)=>{event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';})</script>
+</html>
