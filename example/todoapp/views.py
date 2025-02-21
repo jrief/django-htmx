@@ -6,6 +6,8 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_GET, require_POST
 
+from django.utils import timezone
+
 from django_htmx.middleware import HtmxDetails
 
 from todoapp.forms import TodoForm
@@ -61,4 +63,10 @@ def add_todo_item(request: HtmxHttpRequest) -> HttpResponse:
 
 
 def edit_todo_item(request: HtmxHttpRequest, id: int) -> HttpResponse:
+    todo = TodoModel.objects.get(id=id)
+    if request.method == "DELETE":
+        todo.delete()
+    elif request.method == "PUT":
+        todo.completed = True
+        todo.save(update_fields=["completed"])
     return partial_rendering(request)

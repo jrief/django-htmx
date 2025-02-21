@@ -20,12 +20,11 @@
   * debug: https://github.com/bigskysoftware/htmx-extensions/blob/main/src/debug/README.md
   * event-header: https://github.com/bigskysoftware/htmx-extensions/blob/main/src/event-header/README.md
 -->
-<body hx-ext="debug, event-header">
+<body hx-ext="debug, event-header" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
   <main id="main">
     {% block main %}{% endblock %}
   </main>
   {% django_htmx_script %}
 </body>
 
-<script>document.body.addEventListener('htmx:configRequest',(event)=>{event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';})</script>
 </html>

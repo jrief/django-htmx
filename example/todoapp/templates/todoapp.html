@@ -1,7 +1,8 @@
 {% extends "_base.html" %}
 {% load partials %}
 
-{% block main %}
+{% block main %}{% spaceless %}
+  {% comment %}
   <section>
     <p>
       This example shows you how you can do partial rendering for htmx requests using <a href="https://github.com/carltongibson/django-template-partials">django-template-partials</a>.
@@ -9,16 +10,17 @@
       Paginate through the below list of randomly generated people to see this in action, and study the view and template.
     </p>
   </section>
+  {% endcomment %}
 
   <article>
     <section>
-      <form hx-post="{% url 'add-todo-item' %}" hx-target="#table" hx-swap="outerHTML">
+      <form hx-post="{% url 'add-todo-item' %}" hx-target="#table-section" hx-swap="outerHTML">
         <input type="text" name="title" placeholder="Next todo item" size="100" required>
         <button>Add</button>
       </form>
     </section>
-    {% partialdef table-section inline %}
-    <section id="table">
+    {% partialdef table-section inline %}{% spaceless %}
+    <section id="table-section">
       <table>
         <thead>
           <tr>
@@ -33,15 +35,15 @@
           {% for todo_item in page.object_list %}
             <tr>
               <td>{{ todo_item.id }}</td>
-              <td>{{ todo_item.title }}</td>
-              <td>{{ todo_item.created_at }}</td>
-              <td><a hx-put="{% url 'edit-todo-item' todo_item.id %}">✔️</a></td>
-              <td><a hx-delete="{% url 'edit-todo-item' todo_item.id %}">❌</a></td>
+              <td>{% if todo_item.completed %}<s>{{ todo_item.title }}</s>{% else %}<b>{{ todo_item.title }}</b>{% endif %}</td>
+              <td>{{ todo_item.created_at|date:"N j, Y, G:i" }}</td>
+              <td><a hx-put="{% url 'edit-todo-item' todo_item.id %}" hx-target="#table-section" hx-swap="outerHTML">✔️</a></td>
+              <td><a hx-delete="{% url 'edit-todo-item' todo_item.id %}" hx-target="#table-section" hx-swap="outerHTML">❌</a></td>
             </tr>
           {% empty %}
             <tr>
-              <td colspan="4">
-                No todo items on this page.
+              <td colspan="5">
+                <em>No todo items on this page.</em>
               </td>
             </tr>
           {% endfor %}
@@ -89,7 +91,7 @@
         </ul>
       </nav>
     </section>
-    {% endpartialdef %}
+    {% endspaceless %}{% endpartialdef %}
   </article>
 
-{% endblock main %}
+{% endspaceless %}{% endblock main %}

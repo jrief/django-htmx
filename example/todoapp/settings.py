@@ -48,8 +48,8 @@ TEMPLATES = [
     }
 ]
 
-USE_TZ = True
-
+USE_TZ = False
+TIME_ZONE = "UTC"
 
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
