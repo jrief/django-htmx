@@ -2,11 +2,9 @@ from __future__ import annotations
 
 from django.core.paginator import Paginator
 from django.http import HttpRequest
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render
 from django.views.decorators.http import require_GET, require_POST
-
-from django.utils import timezone
 
 from django_htmx.middleware import HtmxDetails
 
@@ -63,7 +61,10 @@ def add_todo_item(request: HtmxHttpRequest) -> HttpResponse:
 
 
 def edit_todo_item(request: HtmxHttpRequest, id: int) -> HttpResponse:
-    todo = TodoModel.objects.get(id=id)
+    try:
+        todo = TodoModel.objects.get(id=id)
+    except TodoModel.DoesNotExist:
+        return HttpResponseNotFound()
     if request.method == "DELETE":
         todo.delete()
     elif request.method == "PUT":

@@ -22,7 +22,6 @@ def django_db_setup(django_db_blocker):
 
 
 @pytest.fixture(autouse=True)
-@pytest.mark.django_db
 def truncate_todo_model():
     from todoapp.models import TodoModel
 
@@ -67,3 +66,10 @@ def htmx_rf(rf):
             return request
 
     return HtmxRequestFactory()
+
+
+@pytest.fixture
+def demopage(live_server, page):
+    url = f'{live_server.url}/'
+    page.goto(url)
+    yield page
