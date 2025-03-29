@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from django.core.paginator import Paginator
 from django.http import HttpRequest
 from django.http import HttpResponse, HttpResponseNotFound
@@ -68,6 +66,6 @@ def edit_todo_item(request: HtmxHttpRequest, id: int) -> HttpResponse:
     if request.method == "DELETE":
         todo.delete()
     elif request.method == "PUT":
-        todo.completed = True
+        todo.completed = not todo.completed
         todo.save(update_fields=["completed"])
     return partial_rendering(request)

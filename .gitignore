@@ -7,4 +7,4 @@
 /dist/
 /docs/_build/
 /example/.venv/
-/example/workdir/
+/demo/workdir/

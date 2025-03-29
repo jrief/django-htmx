@@ -42,7 +42,6 @@ TEMPLATES = [
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.request",
-                "example.context_processors.debug",
             ]
         },
     }

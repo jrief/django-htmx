@@ -1,18 +1,16 @@
-{% extends "_base.html" %}
-{% load partials %}
+{% load django_htmx partials static %}
+{% spaceless %}
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>django-htmx example app</title>
+  <link rel="stylesheet" href="{% static 'mvp.css' %}">
+  <meta name="htmx-config" content='{"historyCacheSize": 15}'>
+  <script src="{% static 'htmx.js' %}" defer></script>
+</head>
 
-{% block main %}{% spaceless %}
-  {% comment %}
-  <section>
-    <p>
-      This example shows you how you can do partial rendering for htmx requests using <a href="https://github.com/carltongibson/django-template-partials">django-template-partials</a>.
-      The view renders only the content of the table section partial for requests made with htmx, saving time and bandwidth.
-      Paginate through the below list of randomly generated people to see this in action, and study the view and template.
-    </p>
-  </section>
-  {% endcomment %}
-
-  <article>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <main>
     <section>
       <form hx-post="{% url 'add-todo-item' %}" hx-target="#table-section" hx-swap="outerHTML">
         <input type="text" name="title" placeholder="Next todo item" size="100" required>
@@ -35,9 +33,9 @@
           {% for todo_item in page.object_list %}
             <tr>
               <td>{{ todo_item.id }}</td>
-              <td>{% if todo_item.completed %}<s>{{ todo_item.title }}</s>{% else %}<b>{{ todo_item.title }}</b>{% endif %}</td>
+              <td><strong>{% if todo_item.completed %}<s>{{ todo_item.title }}</s>{% else %}{{ todo_item.title }}{% endif %}</strong></td>
               <td>{{ todo_item.created_at|date:"N j, Y, G:i" }}</td>
-              <td><a hx-put="{% url 'edit-todo-item' todo_item.id %}" hx-target="#table-section" hx-swap="outerHTML">✔️</a></td>
+              <td><a hx-put="{% url 'edit-todo-item' todo_item.id %}" hx-target="#table-section" hx-swap="outerHTML">{% if todo_item.completed %}✔{% else %}▢{% endif %}</a></td>
               <td><a hx-delete="{% url 'edit-todo-item' todo_item.id %}" hx-target="#table-section" hx-swap="outerHTML">❌</a></td>
             </tr>
           {% empty %}
@@ -92,6 +90,9 @@
       </nav>
     </section>
     {% endspaceless %}{% endpartialdef %}
-  </article>
+  </main>
+  {% django_htmx_script %}
+</body>
 
-{% endspaceless %}{% endblock main %}
+</html>
+{% endspaceless %}

@@ -1,5 +1,4 @@
 import pytest
-import time
 from playwright.sync_api import expect
 from django.urls import reverse
 
@@ -27,8 +26,8 @@ def test_table_section_one_entry(live_server, page):
     expect(td_locator).to_have_count(5)
     expect(td_locator.nth(0)).to_have_text(str(todo_item.id))
     expect(td_locator.nth(1)).to_have_text(todo_item.title)
-    expect(td_locator.nth(2)).to_have_text(todo_item.created_at.strftime("%b. %-d, %Y, %-H:%M"))
-    expect(td_locator.nth(3).locator('a')).to_have_text('✔️')
+    expect(td_locator.nth(2)).to_have_text(todo_item.created_at.strftime("%B %-d, %Y, %-H:%M"))
+    expect(td_locator.nth(3).locator('a')).to_have_text('▢')
     expect(td_locator.nth(4).locator('a')).to_have_text('❌')
     page.screenshot(path='test_table_section_one_entry.png')
 
@@ -53,8 +52,13 @@ def test_complete_todo_item(live_server, page):
     )
     assert todo_item.completed is False
     page.goto(f'{live_server.url}{reverse("list-todo-items")}')
-    td_locator = page.locator("main #table-section table tbody tr td")
-    td_locator.nth(3).locator('a').click()
+    endpoint = reverse("edit-todo-item", args=(todo_item.pk,))
+    done_button = page.locator(f'#table-section table tbody tr td a[hx-put="{endpoint}"]')
+    expect(done_button).to_have_text('▢')
+    with page.expect_response(f'{live_server.url}{endpoint}') as response:
+        done_button.click()
+    expect(done_button).to_have_text('✔')
+    assert response.value.ok
     todo_item.refresh_from_db()
     assert todo_item.completed is True
 
@@ -64,9 +68,15 @@ def test_delete_todo_item(live_server, page):
     TodoModel.objects.create(
         title="Temporary Todo Item",
     )
-    assert TodoModel.objects.count() == 1
+    todo_item = TodoModel.objects.first()
+    assert isinstance(todo_item, TodoModel)
     page.goto(f'{live_server.url}{reverse("list-todo-items")}')
-    td_locator = page.locator("main #table-section table tbody tr td")
-    td_locator.nth(4).locator('a').click()
-    time.sleep(0.2)  # test sometimes fails, because the server app didn't process the delete request
+    endpoint = reverse("edit-todo-item", args=(todo_item.pk,))
+    delete_button = page.locator(f'#table-section table tbody tr td a[hx-delete="{endpoint}"]')
+    expect(delete_button).to_have_text("❌")
+
+    with page.expect_response(f'{live_server.url}{endpoint}') as response:
+        delete_button.click()
+    assert response.value.ok
+
     assert TodoModel.objects.count() == 0
