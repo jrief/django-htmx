@@ -6,6 +6,9 @@ from playwright.sync_api import Page, expect
 def test_example(page: Page) -> None:
     page.goto("http://localhost:8001/")
     page.get_by_role("textbox", name="Next todo item").click()
-    page.get_by_role("textbox", name="Next todo item").fill("First Todo Item")
+    page.get_by_role("textbox", name="Next todo item").fill("Do something")
     page.get_by_role("button", name="Add").click()
-    expect(page.locator("b")).to_contain_text("First Todo Item")
+    page.screenshot(path="test1.png")
+    page.get_by_text("▢").first.click()
+    page.screenshot(path="test2.png")
+    expect(page.locator("tbody")).to_contain_text("Do something")

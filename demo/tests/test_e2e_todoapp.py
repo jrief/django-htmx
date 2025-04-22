@@ -13,7 +13,6 @@ def test_full_page_empty_table(live_server, page):
     expect(td_locator).to_be_visible()
     expect(td_locator).to_have_attribute('colspan', '5')
     expect(td_locator).to_have_text('No todo items on this page.')
-    page.screenshot(path='test_full_page_empty_table.png')
 
 
 @pytest.mark.django_db
@@ -29,7 +28,6 @@ def test_table_section_one_entry(live_server, page):
     expect(td_locator.nth(2)).to_have_text(todo_item.created_at.strftime("%B %-d, %Y, %-H:%M"))
     expect(td_locator.nth(3).locator('a')).to_have_text('▢')
     expect(td_locator.nth(4).locator('a')).to_have_text('❌')
-    page.screenshot(path='test_table_section_one_entry.png')
 
 
 def test_add_todo_item(live_server, page):
@@ -46,21 +44,27 @@ def test_add_todo_item(live_server, page):
 
 
 @pytest.mark.django_db
-def test_complete_todo_item(live_server, page):
+def test_toggle_todo_item(live_server, page):
     todo_item = TodoModel.objects.create(
         title="Current Todo Item",
     )
     assert todo_item.completed is False
-    page.goto(f'{live_server.url}{reverse("list-todo-items")}')
+    page.goto(f"{live_server.url}{reverse('list-todo-items')}")
     endpoint = reverse("edit-todo-item", args=(todo_item.pk,))
-    done_button = page.locator(f'#table-section table tbody tr td a[hx-put="{endpoint}"]')
-    expect(done_button).to_have_text('▢')
+    toggle_button = page.locator(f'#table-section table tbody tr td a[hx-put="{endpoint}"]')
+    expect(toggle_button).to_have_text("▢")
+    page.screenshot(path='before-toggle.png')
     with page.expect_response(f'{live_server.url}{endpoint}') as response:
-        done_button.click()
-    expect(done_button).to_have_text('✔')
-    assert response.value.ok
+        toggle_button.click()
     todo_item.refresh_from_db()
     assert todo_item.completed is True
+    expect(toggle_button).to_have_text("✔")
+    page.screenshot(path='after-toggle.png')
+    td_locator = page.locator("#table-section table tbody tr td")
+    item_locator = td_locator.nth(1).locator("strong")
+    expect(item_locator).to_have_text("Current Todo Item")
+    expect(item_locator.locator("del")).to_be_visible()
+    assert response.value.ok
 
 
 @pytest.mark.django_db
@@ -78,5 +82,4 @@ def test_delete_todo_item(live_server, page):
     with page.expect_response(f'{live_server.url}{endpoint}') as response:
         delete_button.click()
     assert response.value.ok
-
     assert TodoModel.objects.count() == 0

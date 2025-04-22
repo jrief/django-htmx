@@ -69,22 +69,26 @@ def test_add_todo_item(htmx_rf):
 
 
 @pytest.mark.django_db
-def test_complete_todo_item(htmx_rf):
+def test_toggle_todo_item(htmx_rf):
     todo_item = TodoModel.objects.create(
         title="Current Todo Item",
     )
+    assert todo_item.completed is False
     request = htmx_rf.put(
         reverse("edit-todo-item", args=[todo_item.id]),
         hx_target="#table-section",
     )
     response = edit_todo_item(request, todo_item.id)
+    todo_item.refresh_from_db()
+    assert todo_item.completed is True
     soup = BeautifulSoup(response.content, "html.parser")
-    assert soup.find(id="main") is None
+    assert soup.find(id="main") is None  # in partial rendering, no main tag must appear
     td_tags = soup.select("#table-section table tbody tr td")
     assert len(td_tags) == 5
     assert td_tags[0].text == str(todo_item.id)
+    assert td_tags[3].text == "✔"
     expected = soup.new_tag(name="strong")
-    expected.append(soup.new_tag(name="s", string=todo_item.title))
+    expected.append(soup.new_tag(name="del", string=todo_item.title))
     assert td_tags[1].contents == [expected]
     assert td_tags[2].text == todo_item.created_at.strftime("%B %-d, %Y, %-H:%M")
 

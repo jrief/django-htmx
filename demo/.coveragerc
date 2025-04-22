@@ -1,0 +1,5 @@
+[run]
+  source = \
+    tests/
+    todoapp/
+  omit = todoapp/migrations/

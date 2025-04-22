@@ -33,7 +33,11 @@
           {% for todo_item in page.object_list %}
             <tr>
               <td>{{ todo_item.id }}</td>
-              <td><strong>{% if todo_item.completed %}<s>{{ todo_item.title }}</s>{% else %}{{ todo_item.title }}{% endif %}</strong></td>
+            {% if todo_item.completed %}
+              <td><strong><del>{{ todo_item.title }}</del></strong></td>
+            {% else %}
+              <td><strong>{{ todo_item.title }}</strong></td>
+            {% endif %}
               <td>{{ todo_item.created_at|date:"N j, Y, G:i" }}</td>
               <td><a hx-put="{% url 'edit-todo-item' todo_item.id %}" hx-target="#table-section" hx-swap="outerHTML">{% if todo_item.completed %}✔{% else %}▢{% endif %}</a></td>
               <td><a hx-delete="{% url 'edit-todo-item' todo_item.id %}" hx-target="#table-section" hx-swap="outerHTML">❌</a></td>
@@ -47,47 +51,6 @@
           {% endfor %}
         </tbody>
       </table>
-      <nav hx-target="#table" hx-swap="outerHTML" hx-push-url=true>
-        <ul>
-          {% if page.number != 1 %}
-            <li>
-              <!--
-                For each link we use hx-get to tell htmx to fetch that URL and
-                swap it in. We also repeat the URL in the href attribute so the
-                page works without JavaScript, and to ensure the link is
-                displayed as clickable.
-              -->
-              <a hx-get="?page=1" href="?page=1">
-                &laquo; First
-              </a>
-            </li>
-          {% endif %}
-          {% if page.has_previous %}
-            <li>
-              <a hx-get="?page={{ page.previous_page_number }}" href="?page={{ page.previous_page_number }}">
-                {{ page.previous_page_number }}
-              </a>
-            </li>
-          {% endif %}
-          <li>
-            {{ page.number }}
-          </li>
-          {% if page.has_next %}
-            <li>
-              <a hx-get="?page={{ page.next_page_number }}" href="?page={{ page.next_page_number }}">
-                {{ page.next_page_number }}
-              </a>
-            </li>
-          {% endif %}
-          {% if page.number != page.paginator.num_pages %}
-            <li>
-              <a hx-get="?page={{ page.paginator.num_pages }}" href="?page={{ page.paginator.num_pages }}">
-                &raquo; Last
-              </a>
-            </li>
-          {% endif %}
-        </ul>
-      </nav>
     </section>
     {% endspaceless %}{% endpartialdef %}
   </main>
